@@ -11,7 +11,7 @@ on:
 jobs:
   unit-test:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
     - name: Git - Checkout
       uses: actions/checkout@v3
