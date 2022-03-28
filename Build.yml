@@ -22,7 +22,30 @@ jobs:
     - name: Setup - SSH
       uses: webfactory/ssh-agent@v0.5.4
       with:
-        ssh-private-key: ${{ secrets.FASTFILE_SSH_PRIVATE_KEY }}
+        ssh-private-key: |
+          ${{ secrets.FASTFILE_SSH_PRIVATE_KEY }}
+          ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
+    - name: Cache - CocoaPods
+      uses: actions/cache@v2
+      with:
+        path: Pods
+        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pods-
+    - name: Cache - Carthage
+      uses: actions/cache@v2
+      with:
+        path: Carthage
+        key: ${{ runner.os }}-carthage-${{ hashFiles('**/Cartfile.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-carthage-
+    - name: Cache - Swift Pachage Manager
+      uses: actions/cache@v2
+      with:
+        path: .build
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
     - name: Build
       uses: maierj/fastlane-action@v2.0.1
       env:
