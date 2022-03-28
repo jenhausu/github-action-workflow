@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
+  main:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:

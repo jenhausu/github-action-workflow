@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  unit-test:
+  main:
     runs-on: macos-latest
     timeout-minutes: 60
     steps:
