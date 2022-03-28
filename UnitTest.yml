@@ -8,6 +8,9 @@ on:
       - 'develop'
   workflow_dispatch:
 
+env:
+  HAVE_UNIT_TEST: ${{ secrets.HAVE_UNIT_TEST }}
+
 jobs:
   main:
     runs-on: macos-latest
@@ -27,7 +30,9 @@ jobs:
     - name: Setup - SSH
       uses: webfactory/ssh-agent@v0.5.4
       with:
-        ssh-private-key: ${{ secrets.FASTFILE_SSH_PRIVATE_KEY }}
+        ssh-private-key: |
+          ${{ secrets.FASTFILE_SSH_PRIVATE_KEY }}
+          ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
     - name: Cache - CocoaPods
       uses: actions/cache@v2
       with:
@@ -50,9 +55,18 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-spm-
     - name: Unit Test
+      if: env.HAVE_UNIT_TEST == 'true'
       uses: maierj/fastlane-action@v2.0.1
       env:
         RUN_ID: ${{ github.run_id }}
         GITHUB_REPOSITORY: ${{ github.repository }}
       with:
         lane: 'unit_test'
+    - name: Build
+      if: env.HAVE_UNIT_TEST != 'true'
+      uses: maierj/fastlane-action@v2.0.1
+      env:
+        RUN_ID: ${{ github.run_id }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+      with:
+        lane: 'build'
