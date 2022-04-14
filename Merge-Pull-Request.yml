@@ -1,17 +1,15 @@
-name: UnitTest
+name: Merge Pull Request
 
 on:
-  push:
-    branches:
-      - 'feature/*'
-      - 'fix/*'
-  workflow_dispatch:
+  pull_request:
+    types: [ closed ]
 
 env:
   HAVE_UNIT_TEST: ${{ secrets.HAVE_UNIT_TEST }}
 
 jobs:
   main:
+    if: github.event.pull_request.merged == true
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
