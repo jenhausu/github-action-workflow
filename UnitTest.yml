@@ -53,6 +53,10 @@ jobs:
         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
           ${{ runner.os }}-spm-
+    - name: Set - environment variables
+      uses: tw3lveparsecs/github-actions-set-variables@v0.1
+      with:
+        envFilePath: .github/env/fastlane.env
     - name: Unit Test
       if: env.HAVE_UNIT_TEST == 'true'
       uses: maierj/fastlane-action@v2.0.1
@@ -64,8 +68,5 @@ jobs:
     - name: Build
       if: env.HAVE_UNIT_TEST != 'true'
       uses: maierj/fastlane-action@v2.0.1
-      env:
-        RUN_ID: ${{ github.run_id }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
       with:
         lane: 'build'
