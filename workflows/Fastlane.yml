@@ -1,15 +1,19 @@
-name: UnitTest
+name: Archive
 
 on:
-  push:
-    branches:
-      - 'feature/*'
-      - 'fix/*'
-  workflow_dispatch:
   workflow_call:
-
-env:
-  HAVE_UNIT_TEST: ${{ secrets.HAVE_UNIT_TEST }}
+    inputs:
+      lane_name:
+        required: true
+        type: string
+      fetch_depth:
+        required: false
+        type: number
+    secrets:
+      fastfile_ssh_private_key:
+        required: true
+      match_ssh_private_key:
+        required: true
 
 jobs:
   main:
@@ -17,9 +21,16 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Git - Checkout
+      if: github.event.inputs.fetch_depth == ''
       uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
+    - name: Git - Checkout
+      if: github.event.inputs.fetch_depth != ''
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        fetch-depth: ${{ inputs.fetch_depth }}
     - name: Setup - Environment Variables
       uses: tw3lveparsecs/github-actions-set-variables@v0.1
       with:
@@ -31,12 +42,12 @@ jobs:
       with:
         ruby-version: ${{ env.RUBY_VERSION }}
         bundler-cache: true
-    - name: Setup - SSH
+    - name: Setup - SSH Agent
       uses: webfactory/ssh-agent@v0.5.4
       with:
         ssh-private-key: |
-          ${{ secrets.FASTFILE_SSH_PRIVATE_KEY }}
-          ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
+          ${{ secrets.fastfile_ssh_private_key }}
+          ${{ secrets.match_ssh_private_key }}
     - name: Cache - CocoaPods
       uses: actions/cache@v2
       with:
@@ -58,19 +69,10 @@ jobs:
         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
           ${{ runner.os }}-spm-
-    - name: Unit Test
-      if: env.HAVE_UNIT_TEST == 'true'
+    - name: Fastlane - Archive
       uses: maierj/fastlane-action@v2.0.1
       env:
         RUN_ID: ${{ github.run_id }}
         GITHUB_REPOSITORY: ${{ github.repository }}
       with:
-        lane: 'unit_test'
-    - name: Build
-      if: env.HAVE_UNIT_TEST != 'true'
-      uses: maierj/fastlane-action@v2.0.1
-      env:
-        RUN_ID: ${{ github.run_id }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-      with:
-        lane: 'build'
+        lane: ${{ inputs.lane_name }}
