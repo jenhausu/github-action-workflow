@@ -1,18 +1,22 @@
-name: Install Library
+name: Release
 
 on:
+  push:
+    branches:
+      - 'master'
+      - 'main'
   workflow_dispatch:
 
 jobs:
   main:
     runs-on: macos-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
     - name: Git - Checkout
       uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
-        fetch-depth: 20
+        fetch-depth: 30
     - name: Setup - Xcode
       run: sudo xcode-select -s /Applications/Xcode_13.2.1.app
     - name: Setup - Ruby and bundler dependencies
@@ -20,10 +24,12 @@ jobs:
       with:
         ruby-version: 3.0.0-preview1
         bundler-cache: true
-    - name: Setup - SSH
+    - name: Setup - SSH Agent
       uses: webfactory/ssh-agent@v0.5.4
       with:
-        ssh-private-key: ${{ secrets.FASTFILE_SSH_PRIVATE_KEY }}
+        ssh-private-key: |
+          ${{ secrets.FASTFILE_SSH_PRIVATE_KEY }}
+          ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
     - name: Cache - CocoaPods
       uses: actions/cache@v2
       with:
@@ -45,11 +51,11 @@ jobs:
         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
           ${{ runner.os }}-spm-
-    - name: Set - environment variables
-      uses: tw3lveparsecs/github-actions-set-variables@v0.1
-      with:
-        envFilePath: .github/env/fastlane.env
-    - name: Install Library
+    - name: Fastlane - Alpah Archive
       uses: maierj/fastlane-action@v2.0.1
+      env:
+        FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+        RUN_ID: ${{ github.run_id }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
       with:
-        lane: 'install_library'
+        lane: release

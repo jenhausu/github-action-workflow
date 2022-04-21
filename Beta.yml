@@ -1,17 +1,13 @@
-name: Merge Pull Request
+name: Beta
 
 on:
-  pull_request:
+  push:
     branches:
-      - 'develop'
-    types: [ closed ]
-
-env:
-  HAVE_UNIT_TEST: ${{ secrets.HAVE_UNIT_TEST }}
+      - 'release/*'
+  workflow_dispatch:
 
 jobs:
   main:
-    if: github.event.pull_request.merged == true
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -19,6 +15,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
+        fetch-depth: 50
     - name: Setup - Xcode
       run: sudo xcode-select -s /Applications/Xcode_13.2.1.app
     - name: Setup - Ruby and bundler dependencies
@@ -26,7 +23,7 @@ jobs:
       with:
         ruby-version: 3.0.0-preview1
         bundler-cache: true
-    - name: Setup - SSH
+    - name: Setup - SSH Agent
       uses: webfactory/ssh-agent@v0.5.4
       with:
         ssh-private-key: |
@@ -53,17 +50,11 @@ jobs:
         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
           ${{ runner.os }}-spm-
-    - name: Set - environment variables
-      uses: tw3lveparsecs/github-actions-set-variables@v0.1
-      with:
-        envFilePath: .github/env/fastlane.env
-    - name: Unit Test
-      if: env.HAVE_UNIT_TEST == 'true'
+    - name: Fastlane - Beta Archive
       uses: maierj/fastlane-action@v2.0.1
+      env:
+        FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+        RUN_ID: ${{ github.run_id }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
       with:
-        lane: 'unit_test'
-    - name: Build
-      if: env.HAVE_UNIT_TEST != 'true'
-      uses: maierj/fastlane-action@v2.0.1
-      with:
-        lane: 'build'
+        lane: beta

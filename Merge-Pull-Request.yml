@@ -1,12 +1,19 @@
-name: Snapshot
+name: Merge Pull Request
 
 on:
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - 'develop'
+    types: [ closed ]
+
+env:
+  HAVE_UNIT_TEST: ${{ secrets.HAVE_UNIT_TEST }}
 
 jobs:
   main:
+    if: github.event.pull_request.merged == true
     runs-on: macos-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
     - name: Git - Checkout
       uses: actions/checkout@v3
@@ -46,11 +53,19 @@ jobs:
         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
           ${{ runner.os }}-spm-
-    - name: Set - environment variables
-      uses: tw3lveparsecs/github-actions-set-variables@v0.1
-      with:
-        envFilePath: .github/env/fastlane.env
-    - name: Snapshot
+    - name: Unit Test
+      if: env.HAVE_UNIT_TEST == 'true'
       uses: maierj/fastlane-action@v2.0.1
+      env:
+        RUN_ID: ${{ github.run_id }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
       with:
-        lane: 'screenshots'
+        lane: 'unit_test'
+    - name: Build
+      if: env.HAVE_UNIT_TEST != 'true'
+      uses: maierj/fastlane-action@v2.0.1
+      env:
+        RUN_ID: ${{ github.run_id }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+      with:
+        lane: 'build'
