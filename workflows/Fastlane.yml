@@ -8,7 +8,7 @@ on:
         type: string
       fetch_depth:
         required: false
-        type: Int
+        type: number
 
 jobs:
   main:
