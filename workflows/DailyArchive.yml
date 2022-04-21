@@ -10,3 +10,6 @@ jobs:
     with:
       lane_name: daily_archive
       fetch_depth: 20
+    secrets:
+      fastfile_ssh_private_key: ${{ secrets.FASTFILE_SSH_PRIVATE_KEY }}
+      match_ssh_private_key: ${{ secrets.MATCH_SSH_PRIVATE_KEY }}

@@ -9,6 +9,11 @@ on:
       fetch_depth:
         required: false
         type: number
+    secrets:
+      fastfile_ssh_private_key:
+        required: true
+      match_ssh_private_key:
+        required: true
 
 jobs:
   main:
@@ -41,8 +46,8 @@ jobs:
       uses: webfactory/ssh-agent@v0.5.4
       with:
         ssh-private-key: |
-          ${{ secrets.FASTFILE_SSH_PRIVATE_KEY }}
-          ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
+          ${{ secrets.fastfile_ssh_private_key }}
+          ${{ secrets.match_ssh_private_key }}
     - name: Cache - CocoaPods
       uses: actions/cache@v2
       with:

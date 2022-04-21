@@ -8,3 +8,6 @@ jobs:
     uses: ./.github/workflows/Fastlane.yml
     with:
       lane_name: install_library
+    secrets:
+      fastfile_ssh_private_key: ${{ secrets.FASTFILE_SSH_PRIVATE_KEY }}
+      match_ssh_private_key: ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
