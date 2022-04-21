@@ -16,12 +16,12 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Git - Checkout
-      if: inputs.fetch_depth == ''
+      if: github.event.inputs.fetch_depth == ''
       uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
     - name: Git - Checkout
-      if: inputs.fetch_depth != ''
+      if: github.event.inputs.fetch_depth != ''
       uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
